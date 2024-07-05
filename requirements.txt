@@ -1,0 +1,5 @@
+aiogram==3.5
+python_dotenv
+rave_python
+paramiko
+requests
