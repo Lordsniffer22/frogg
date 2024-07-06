@@ -185,6 +185,10 @@ async def delete_hysteria_user(server, username):
                 logging.info(f"Deleted user {username} from {server}")
                 await reload_hysteria_daemon(server)
 
+        
+
+        
+
         except Exception as e:
             logging.error(f"Deleting user failed: {e}")
 
@@ -329,6 +333,7 @@ async def adder(query: CallbackQuery, state: FSMContext):
             # Schedule user deletion in 24 hours
             await asyncio.sleep(72 * 3600)
             await delete_hysteria_user(server, username)
+            remove_from_database(user_id)
 
 
     else:
