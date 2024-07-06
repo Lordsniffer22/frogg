@@ -1,7 +1,7 @@
 # Server credentials
 SERVER_CREDENTIALS = {
-    'USA': {'host': '85.159.213.117',
+    'USA': {'host': '159.100.22.216',
            'username': 'root',
-           'password': 'itmeansnothing8'
+           'password': '4L389IRtB2YU83J2@@8J1P'
            }
 }
