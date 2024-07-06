@@ -18,6 +18,7 @@ import sys
 import json
 import sqlite3
 import string
+import random
 
 load_dotenv()
 TOKEN = os.getenv('BOT_TOKEN')
@@ -288,7 +289,11 @@ async def force_switch(message: Message):
 
 @dp.message(Form.username)
 async def fetch_name(message: Message, state: FSMContext) -> None:
-    await state.update_data(username=message.text.strip())
+    mass = message.text.strip()
+    random_letters = ''.join(random.choices(string.ascii_letters, k=3))
+    real_mass = mass + "-" + random_letters
+
+    await state.update_data(username=real_mass.lower())
     await message.reply(f'Ready to Go, <b><i>{message.text.strip()}</i></b>!\n\n'
                         'Click the Below Button.', reply_markup=keys.get_hysteria.as_markup())
 
@@ -323,15 +328,16 @@ async def adder(query: CallbackQuery, state: FSMContext):
 
         if result:
             await waiting.delete()
+            allowed = f'➖➖➖➖➖➖➖➖➖➖\n\n'\
+                      f'- X Tunnel Pro\n'\
+                      f'- Alien Tunnel\n'\
+                      f'- Idroid \n'
             await query.message.answer(f'👩‍🦱 Account created:\n➖➖➖➖➖➖➖➖➖➖\n\n'
                                        f'<b>Host:</b> <code>{hosts}</code>\n'
-                                       f'<b>username:</b> <code>teslassh</code>\n'
-                                       f'<b>password: </b><code>{username}</code>\n\n'
+                                       f'<b>username:</b> <code>{username}</code>\n'
+                                       f'<b>password: </b><code>xteria_bot</code>\n\n'
                                        f'<i><u><b>📲 Compatible with:</b> </u>\n'
-                                       f'➖➖➖➖➖➖➖➖➖➖\n\n'
-                                       f'- X Tunnel Pro\n'
-                                       f'- Alien Tunnel\n'
-                                       f'- Idroid \n'
+                                       f'{html.quote(allowed)}'
                                        f'➖➖➖➖➖➖➖➖➖➖\n\n'
                                        f'🎯 UDP Core: <b>Hysteria 1.0[x-teria]</b></i>')
 
@@ -340,6 +346,7 @@ async def adder(query: CallbackQuery, state: FSMContext):
             # Schedule user deletion in 24 hours
             await asyncio.sleep(72 * 3600)
             await delete_hysteria_user(server, username)
+            remove_from_database(user_id)
 
 
     else:
@@ -362,11 +369,16 @@ async def source_rep(message: Message):
 @dp.message(F.text.lower() == '🚀enabled apps')
 async def get_app(message: Message):
     app_msg = ('All servers you create here work good with most apps including:\n\n'
-               '- X Tunnel Pro (Recommeded)\n'
+               '- X TUNNEL PRO (Recommended)\n'
+               '- Alien Tunnel Pro \n'
+               '- 24Vpn\n'
+               '- Smk\n'
+               '- Royal Tunnel Plus\n'
+               '- Demon Tunnel\n'
                '- Binke Tunnel\n'
-               '- All SMK Apps\n'
-               '- All Eugine Apps\n\n'
-               '- <b><i><u>All Others Except:</u></i></b> \n\n'
+               '- Maya Tun\n'
+               '\n'
+               '- <b><i><u>And All Others Except:</u></i></b> \n\n'
                '<a href="t.me/udpcustom"> -UDP CUSTOM</a>\n'
                '<a href="t.me/udp_request"> -UDP REQUEST</a>')
     await message.reply(app_msg, reply_markup=keys.xapp.as_markup(), disable_web_page_preview=True)
