@@ -332,6 +332,7 @@ async def adder(query: CallbackQuery, state: FSMContext):
                       f'- X Tunnel Pro\n'\
                       f'- Alien Tunnel\n'\
                       f'- Idroid \n'
+            await state.clear()
             await query.message.answer(f'👩‍🦱 Account created:\n➖➖➖➖➖➖➖➖➖➖\n\n'
                                        f'<b>Host:</b> <code>{hosts}</code>\n'
                                        f'<b>username:</b> <code>{username}</code>\n'
@@ -351,6 +352,7 @@ async def adder(query: CallbackQuery, state: FSMContext):
 
     else:
         await waiting.delete()
+        await state.clear()
         await query.message.answer(database_check)
 
     # await query.message.answer('The add_hysteria_function is actively being built. Test later!')
