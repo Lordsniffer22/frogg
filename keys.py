@@ -13,11 +13,11 @@ keyb = ReplyKeyboardMarkup(
     keyboard=[
         [
             KeyboardButton(text='📲 Get Servers'),
-            KeyboardButton(text='🚀 Get App')
+            KeyboardButton(text='💡 Usage Demo')
         ],
 [
-            KeyboardButton(text='💡 Usage Demo'),
-            KeyboardButton(text='Source Code')
+            KeyboardButton(text='🚀Enabled Apps'),
+            KeyboardButton(text='Src </code>')
         ]
 
     ],
@@ -69,3 +69,10 @@ markup = InlineKeyboardMarkup(inline_keyboard=[
  ]
 ])  # Some markup
 SV.attach(InlineKeyboardBuilder.from_markup(markup))
+
+cancel = InlineKeyboardBuilder()
+markup = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='cancel', callback_data='cancel')
+ ]
+])  # Some markup
+cancel.attach(InlineKeyboardBuilder.from_markup(markup))

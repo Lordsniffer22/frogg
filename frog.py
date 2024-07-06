@@ -1,5 +1,5 @@
 import asyncio
-from aiogram import Bot, Dispatcher, F, html
+from aiogram import Bot, Dispatcher, F, html, Router
 from aiogram.enums import ParseMode
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command, CommandStart
@@ -17,12 +17,14 @@ import logging
 import sys
 import json
 import sqlite3
-
+import string
 load_dotenv()
 TOKEN = os.getenv('BOT_TOKEN')
 print(TOKEN)
 UDP_CUSTOM = '-1001653400671'
 XTUNEL = '-1001837669085'
+
+force = False
 
 # User states
 user_states = {}
@@ -93,8 +95,8 @@ async def add_to_database(user_id):
         return f'Error: {str(e)}'
 
 
-
-
+async def cancel(state: FSMContext) -> None:
+    await state.clear()
 
 async def check_subscription(chat_id: int, user_id: int) -> bool:
     try:
@@ -244,12 +246,38 @@ async def get_servers(message: Message, state: FSMContext) -> None:
     user_id = message.from_user.id
     async with ChatActionSender.typing(bot=bot, chat_id=user_id):
 
-        if (await check_subscription(UDP_CUSTOM, user_id) and await check_subscription(XTUNEL, user_id)):
-            await state.set_state(Form.username)
-            await message.answer("What's Your first name?\n\nDon't include spaces")
+        if force:
+            if (await check_subscription(UDP_CUSTOM, user_id) and await check_subscription(XTUNEL, user_id)):
+                await state.set_state(Form.username)
+                await message.answer("What's Your first name?\n\nDon't include spaces", reply_markup=keys.cancel.as_markup())
+            else:
+                await message.reply(rep, reply_markup=keys.sponsors.as_markup())
 
         else:
-            await message.reply(rep, reply_markup=keys.sponsors.as_markup())
+            await state.set_state(Form.username)
+            await message.answer("What's Your first name?\n\nDon't include spaces", reply_markup=keys.cancel.as_markup())
+
+
+def toggle_force():
+    """Toggle the boolean value of 'force'."""
+    global force
+    force = not force
+
+    return force
+@dp.message(F.text.lower() == 'force')
+async def force_switch(message: Message):
+    user_id = message.from_user.id
+    if user_id == 1383981132 or user_id == 1940595419:
+        force = toggle_force()
+        if force == True:
+            await message.reply(f'Force Join Has been Turned ON')
+        else:
+            await message.reply(f'Force Join Has been Turned OFF')
+
+    else:
+        await message.reply('Nice try')
+
+
 @dp.message(Form.username)
 async def fetch_name(message: Message, state: FSMContext) -> None:
     await state.update_data(username=message.text.strip())
@@ -261,6 +289,11 @@ async def creates(query: CallbackQuery):
     await query.message.delete()
     jim = 'Available Locations'
     await query.message.answer(jim, reply_markup=keys.SV.as_markup())
+
+@dp.callback_query(lambda query: query.data == 'cancel')
+async def close(query: CallbackQuery, state: FSMContext):
+    await query.message.delete()
+    await cancel(state)
 
 @dp.callback_query(lambda query: query.data.startswith('add_to_'))
 async def adder(query: CallbackQuery, state: FSMContext):
@@ -304,15 +337,25 @@ async def adder(query: CallbackQuery, state: FSMContext):
 
     #await query.message.answer('The add_hysteria_function is actively being built. Test later!')
 
-@dp.message(F.text.lower() == 'source code')
+@dp.message(F.text.lower() == 'src </code>')
 async def source_rep(message: Message):
     links = "t.me/teslassh"
-    repl = f'Build Your Own VPN app today. \n\nContact the admins of this bot to Buy VPN Source code Today!.\n\n-->> <a href="{links}">Tesla SSH </a>'
+    repl = (f'Build Your Own VPN app today. \n\nContact the admins of this bot to Buy VPN Source code Today!.\n\n'
+            f'-->> <a href="{links}">Tesla SSH </a> (I/O)\n'
+            f'-->> @AndroidXtra\n'
+            f'➖➖➖➖➖➖➖➖➖➖\n\n')
     await message.reply(repl, reply_markup=keys.dev.as_markup())
-@dp.message(F.text.lower() == '🚀 get app')
+@dp.message(F.text.lower() == '🚀enabled apps')
 async def get_app(message: Message):
-    app_msg = 'Download Link'
-    await message.reply(app_msg, reply_markup=keys.xapp.as_markup())
+    app_msg = ('All servers you create here work good with most apps including:\n\n'
+               '- X Tunnel Pro (Recommeded)\n'
+               '- Binke Tunnel\n'
+               '- All SMK Apps\n'
+               '- All Eugine Apps\n\n'
+               '- <b><i><u>All Others Except:</u></i></b> \n\n'
+               '<a href="t.me/udpcustom"> -UDP CUSTOM</a>\n'
+               '<a href="t.me/udp_request"> -UDP REQUEST</a>')
+    await message.reply(app_msg, reply_markup=keys.xapp.as_markup(), disable_web_page_preview=True)
 
 @dp.message(F.text.lower() == '💡 usage demo')
 async def demo(message: Message):
@@ -341,14 +384,14 @@ async def verifs(query: CallbackQuery):
             await query.message.answer(force, reply_markup=keys.sponsors.as_markup())
 
 
-@dp.message(CommandStart)
+@dp.message(Command('start'))
 async def send_welc(message: Message):
     reply = ('🐊 Hey! Am Udp Hysteria Server Generator (aka X-teria Proxy)\n\n'
              '✍️ Follow the provided instructions and buttons to generate a free premium Udp Hysteria Server valid for 24hrs ⏰\n\n'
              '♻️ Always visit this bot to create a new server on Expiring of the previous generated server')
-    await message.reply(reply, reply_markup=keys.keyb)
-
-
+    async with ChatActionSender.typing(bot=bot, chat_id=message.from_user.id):
+        await asyncio.sleep(1)
+        await message.reply(reply, reply_markup=keys.keyb)
 
 
 async def main() -> None:
