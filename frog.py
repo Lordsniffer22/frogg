@@ -391,7 +391,7 @@ async def send_welc(message: Message):
              '♻️ Always visit this bot to create a new server on Expiring of the previous generated server')
     async with ChatActionSender.typing(bot=bot, chat_id=message.from_user.id):
         await asyncio.sleep(1)
-        await message.reply(reply, reply_markup=keys.keyb)
+        await message.reply(reply, reply_markup=keys.keyb.as_markup())
 
 
 async def main() -> None:
