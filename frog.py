@@ -14,6 +14,7 @@ import paramiko
 import servers
 import keys
 import logging
+import ipinfo
 import sys
 import json
 import sqlite3
@@ -23,6 +24,11 @@ import random
 load_dotenv()
 TOKEN = os.getenv('BOT_TOKEN')
 print(TOKEN)
+
+access_token = '01431b5e19745e'
+handler = ipinfo.getHandler(access_token)
+
+
 UDP_CUSTOM = '-1001653400671'
 XTUNEL = '-1001837669085'
 
@@ -39,6 +45,7 @@ bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 
 class Form(StatesGroup):
     username = State()
+    ip_add = State()
 
 
 # Establish a connection to the SQLite database
@@ -72,7 +79,18 @@ def remove_from_database(user_id):
     conn.commit()
     conn.close()
 
-
+async def do_req(ip_address):
+    details = handler.getDetails(ip_address)
+    print(details.city)
+    detos = (f"<i><b><u>Details About This IP address:</u></b></i>\n\nIP: {ip_address}\n\n"
+             f"<b>🌎 Country:</b> {details.country_name}\n\n"
+             f"<b>🌆 City:</b> {details.city}\n\n"
+             f"<b>🕸️ Geo Loc:</b> {details.loc}\n\n"
+             f"<b>🎯 Region:</b> {details.region}\n\n"
+             #f"Company: {details.company}\n"
+             f"<b>📭 Postal Code:</b> {details.postal}\n\n"
+             f"<b>⏰ Time Zone:</b> {details.timezone}")
+    return detos
 async def add_to_database(user_id):
     try:
         # Establish a new connection to the SQLite database
@@ -108,9 +126,6 @@ async def check_subscription(chat_id: int, user_id: int) -> bool:
     except Exception as e:
         print(f"Error checking subscription status: {e}")
         return False
-
-
-import paramiko
 
 
 # Establish SSH connection
@@ -366,6 +381,25 @@ async def source_rep(message: Message):
             f'-->> @AndroidXtra\n'
             f'➖➖➖➖➖➖➖➖➖➖\n\n')
     await message.reply(repl, reply_markup=keys.dev.as_markup())
+
+@dp.message(F.text.lower() == '🔎 looking glass')
+async def infos(message: Message, state: FSMContext):
+    await message.reply('Alright, Which IP do you want to look through?')
+    await state.set_state(Form.ip_add)
+
+@dp.message(Form.ip_add)
+async def looking_glass(message: Message, state: FSMContext):
+    ip_blocks = message.text.split('.')
+    if len(ip_blocks) == 4:
+        ip_address = message.text.strip()
+        print(ip_address)
+        details = await do_req(ip_address)
+        await state.clear()
+        await message.reply(details)
+    else:
+        await message.reply('wrong IP format!\n\nI expected 4 Octects. Try again later.')
+        await state.clear()
+
 
 
 @dp.message(F.text.lower() == '🚀enabled apps')
