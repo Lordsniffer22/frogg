@@ -24,6 +24,7 @@ keyb = ReplyKeyboardMarkup(
     resize_keyboard=True
 )
 
+
 sponsors = InlineKeyboardBuilder()
 markup = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='🟢 UDP Custom', url=f"https://t.me/{udpcustom}"),
@@ -36,7 +37,8 @@ sponsors.attach(InlineKeyboardBuilder.from_markup(markup))
 
 get_hysteria = InlineKeyboardBuilder()
 markup = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='CREATE', callback_data='create')
+    [InlineKeyboardButton(text='CREATE', callback_data='create'),
+     InlineKeyboardButton(text='cancel', callback_data='cancel')
  ]
 ])  # Some markup
 get_hysteria.attach(InlineKeyboardBuilder.from_markup(markup))
