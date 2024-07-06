@@ -18,6 +18,7 @@ import sys
 import json
 import sqlite3
 import string
+
 load_dotenv()
 TOKEN = os.getenv('BOT_TOKEN')
 print(TOKEN)
@@ -34,16 +35,14 @@ XTERIA_CREATE = 'awaiting_userename'
 dp = Dispatcher()
 bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 
+
 class Form(StatesGroup):
     username = State()
-
-
 
 
 # Establish a connection to the SQLite database
 def get_db_connection():
     return sqlite3.connect('user_data.db')
-
 
 
 # Initialize the database
@@ -64,12 +63,14 @@ def init_db():
 
 init_db()
 
+
 def remove_from_database(user_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('DELETE FROM users WHERE bot_user_id = ?', (user_id))
     conn.commit()
     conn.close()
+
 
 async def add_to_database(user_id):
     try:
@@ -98,6 +99,7 @@ async def add_to_database(user_id):
 async def cancel(state: FSMContext) -> None:
     await state.clear()
 
+
 async def check_subscription(chat_id: int, user_id: int) -> bool:
     try:
         member = await bot.get_chat_member(chat_id=chat_id, user_id=user_id)
@@ -105,6 +107,8 @@ async def check_subscription(chat_id: int, user_id: int) -> bool:
     except Exception as e:
         print(f"Error checking subscription status: {e}")
         return False
+
+
 import paramiko
 
 
@@ -157,6 +161,7 @@ def read_remote_json_file(ssh, remote_file_path):
         logging.error(f"Error reading JSON file from {remote_file_path}: {e}")
         return None
 
+
 # Function to write the JSON file to the remote server
 def write_remote_json_file(ssh, remote_file_path, data):
     try:
@@ -185,10 +190,6 @@ async def delete_hysteria_user(server, username):
                 logging.info(f"Deleted user {username} from {server}")
                 await reload_hysteria_daemon(server)
 
-        
-
-        
-
         except Exception as e:
             logging.error(f"Deleting user failed: {e}")
 
@@ -208,7 +209,6 @@ async def add_hysteria_user(server, username):
             data = read_remote_json_file(ssh, remote_file_path)
             if data is None:
                 return "Error reading JSON file"
-
 
             if username in data['auth']['config']:
                 print(f'username {username} already exits')
@@ -237,7 +237,7 @@ async def add_hysteria_user(server, username):
         return "SSH connection error"
 
 
-#OTHER MAIN PARTS OF THE BOT
+# OTHER MAIN PARTS OF THE BOT
 
 @dp.message(F.text.lower() == '📲 get servers')
 async def get_servers(message: Message, state: FSMContext) -> None:
@@ -253,13 +253,15 @@ async def get_servers(message: Message, state: FSMContext) -> None:
         if force:
             if (await check_subscription(UDP_CUSTOM, user_id) and await check_subscription(XTUNEL, user_id)):
                 await state.set_state(Form.username)
-                await message.answer("What's Your first name?\n\nDon't include spaces", reply_markup=keys.cancel.as_markup())
+                await message.answer("What's Your first name?\n\nDon't include spaces",
+                                     reply_markup=keys.cancel.as_markup())
             else:
                 await message.reply(rep, reply_markup=keys.sponsors.as_markup())
 
         else:
             await state.set_state(Form.username)
-            await message.answer("What's Your first name?\n\nDon't include spaces", reply_markup=keys.cancel.as_markup())
+            await message.answer("What's Your first name?\n\nDon't include spaces",
+                                 reply_markup=keys.cancel.as_markup())
 
 
 def toggle_force():
@@ -268,6 +270,8 @@ def toggle_force():
     force = not force
 
     return force
+
+
 @dp.message(F.text.lower() == 'force')
 async def force_switch(message: Message):
     user_id = message.from_user.id
@@ -288,16 +292,19 @@ async def fetch_name(message: Message, state: FSMContext) -> None:
     await message.reply(f'Ready to Go, <b><i>{message.text.strip()}</i></b>!\n\n'
                         'Click the Below Button.', reply_markup=keys.get_hysteria.as_markup())
 
+
 @dp.callback_query(lambda query: query.data == 'create')
 async def creates(query: CallbackQuery):
     await query.message.delete()
     jim = 'Available Locations'
     await query.message.answer(jim, reply_markup=keys.SV.as_markup())
 
+
 @dp.callback_query(lambda query: query.data == 'cancel')
 async def close(query: CallbackQuery, state: FSMContext):
     await query.message.delete()
     await cancel(state)
+
 
 @dp.callback_query(lambda query: query.data.startswith('add_to_'))
 async def adder(query: CallbackQuery, state: FSMContext):
@@ -318,8 +325,8 @@ async def adder(query: CallbackQuery, state: FSMContext):
             await waiting.delete()
             await query.message.answer(f'👩‍🦱 Account created:\n➖➖➖➖➖➖➖➖➖➖\n\n'
                                        f'<b>Host:</b> <code>{hosts}</code>\n'
-                                       f'<b>username:</b> <code>{username}</code>\n'
-                                       f'<b>password: </b><code>xteria_bot</code>\n\n'
+                                       f'<b>username:</b> <code>teslassh</code>\n'
+                                       f'<b>password: </b><code>{username}</code>\n\n'
                                        f'<i><u><b>📲 Compatible with:</b> </u>\n'
                                        f'➖➖➖➖➖➖➖➖➖➖\n\n'
                                        f'- X Tunnel Pro\n'
@@ -333,14 +340,14 @@ async def adder(query: CallbackQuery, state: FSMContext):
             # Schedule user deletion in 24 hours
             await asyncio.sleep(72 * 3600)
             await delete_hysteria_user(server, username)
-            remove_from_database(user_id)
 
 
     else:
         await waiting.delete()
         await query.message.answer(database_check)
 
-    #await query.message.answer('The add_hysteria_function is actively being built. Test later!')
+    # await query.message.answer('The add_hysteria_function is actively being built. Test later!')
+
 
 @dp.message(F.text.lower() == 'src </code>')
 async def source_rep(message: Message):
@@ -350,6 +357,8 @@ async def source_rep(message: Message):
             f'-->> @AndroidXtra\n'
             f'➖➖➖➖➖➖➖➖➖➖\n\n')
     await message.reply(repl, reply_markup=keys.dev.as_markup())
+
+
 @dp.message(F.text.lower() == '🚀enabled apps')
 async def get_app(message: Message):
     app_msg = ('All servers you create here work good with most apps including:\n\n'
@@ -362,10 +371,12 @@ async def get_app(message: Message):
                '<a href="t.me/udp_request"> -UDP REQUEST</a>')
     await message.reply(app_msg, reply_markup=keys.xapp.as_markup(), disable_web_page_preview=True)
 
+
 @dp.message(F.text.lower() == '💡 usage demo')
 async def demo(message: Message):
     Link = 'Follow the video to learn how to use our free hysteria Servers'
     await message.reply(Link, reply_markup=keys.demo.as_markup())
+
 
 @dp.callback_query(lambda query: query.data == 'verify')
 async def verifs(query: CallbackQuery):
@@ -381,27 +392,29 @@ async def verifs(query: CallbackQuery):
                 '<b><i> Click the Create button below to start.</i></b>', reply_markup=keys.get_hysteria.as_markup())
         else:
             force = ('╭🔴🟡🟢 ────────────────╮\n'
-           '│\n'
-           '├◉ I Just saw you are not there\n'
-           '│ Join and we proceed.\n'
-           '│\n'
-           '╰─────────────────────╯')
+                     '│\n'
+                     '├◉ I Just saw you are not there\n'
+                     '│ Join and we proceed.\n'
+                     '│\n'
+                     '╰─────────────────────╯')
             await query.message.answer(force, reply_markup=keys.sponsors.as_markup())
 
 
 @dp.message(Command('start'))
 async def send_welc(message: Message):
-    reply = ('🐊 Hey! Am Udp Hysteria Server Generator (aka X-teria Proxy)\n\n'
+
+
+    repl = ('🐊 Hey! Am Udp Hysteria Server Generator (aka X-teria Proxy)\n\n'
              '✍️ Follow the provided instructions and buttons to generate a free premium Udp Hysteria Server valid for 24hrs ⏰\n\n'
              '♻️ Always visit this bot to create a new server on Expiring of the previous generated server')
     async with ChatActionSender.typing(bot=bot, chat_id=message.from_user.id):
         await asyncio.sleep(1)
-        await message.reply(reply, reply_markup=keys.keyb.as_markup())
+        await message.reply(repl, reply_markup=keys.keyb)
 
 
 async def main() -> None:
     await dp.start_polling(bot)
-    
+
 
 if __name__ == '__main__':
     print('Bot is running')
