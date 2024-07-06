@@ -318,7 +318,7 @@ async def adder(query: CallbackQuery, state: FSMContext):
             await waiting.delete()
             await query.message.answer(f'👩‍🦱 Account created:\n➖➖➖➖➖➖➖➖➖➖\n\n'
                                        f'<b>Host:</b> <code>{hosts}</code>\n'
-                                       f'<b>username:</b> <code>teslassh</code>\n'
+                                       f'<b>username:</b> <code>xteria_bot</code>\n'
                                        f'<b>password: </b><code>{username}</code>\n\n'
                                        f'<i><u><b>📲 Compatible with:</b> </u>\n'
                                        f'➖➖➖➖➖➖➖➖➖➖\n\n'
