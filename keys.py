@@ -65,7 +65,7 @@ demo.attach(InlineKeyboardBuilder.from_markup(markup))
 
 SV = InlineKeyboardBuilder()
 markup = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='🇺🇸 USA', callback_data='add_to_usa')
+    [InlineKeyboardButton(text='🇩🇪 Germany', callback_data='add_to_usa')
  ]
 ])  # Some markup
 SV.attach(InlineKeyboardBuilder.from_markup(markup))
