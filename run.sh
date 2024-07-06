@@ -38,7 +38,7 @@ fi
 # Download the application files
 wget -O frog.py https://raw.githubusercontent.com/Lordsniffer22/frogg/main/frog.py &>/dev/null
 wget -O requirements.txt https://raw.githubusercontent.com/Lordsniffer22/frogg/main/requirements.txt &>/dev/null
-wget -O keys.py https://raw.githubusercontent.com/Lordsniffer22/frogg/main/keybds.py &>/dev/null 
+wget -O keys.py https://raw.githubusercontent.com/Lordsniffer22/frogg/main/keys.py &>/dev/null 
 wget -O servers.py https://raw.githubusercontent.com/Lordsniffer22/frogg/main/servers.py
 
 #BUILD AN ENV
