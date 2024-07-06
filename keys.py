@@ -18,6 +18,9 @@ keyb = ReplyKeyboardMarkup(
 [
             KeyboardButton(text='🚀Enabled Apps'),
             KeyboardButton(text='Src </code>')
+        ],
+[
+            KeyboardButton(text='🔎 Looking Glass')
         ]
 
     ],
