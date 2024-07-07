@@ -349,7 +349,7 @@ async def adder(query: CallbackQuery, state: FSMContext):
                                        f'<b>username:</b> <code>{username}</code>\n'
                                        f'<b>password: </b><code>xteria_bot</code>\n'
                                        f'➖➖➖➖➖➖➖➖➖➖\n\n'
-                                       f'🎯 UDP Core: <b>Hysteria 1.0[x-teria]</b></i>')
+                                       f'<i>🎯 UDP Core: <b>Hysteria 1.0[x-teria]</b></i>')
 
 
             # Schedule user deletion in 24 hours
