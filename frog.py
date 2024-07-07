@@ -141,28 +141,22 @@ async def establish_ssh_connection(server):
         return None
 
 
-async def reload_hysteria_daemon(server):
-    ssh = await establish_ssh_connection(server)
-    if ssh:
-        try:
-            stdin, stdout, stderr = ssh.exec_command('sudo systemctl restart hysteria-server')
-            stdout.channel.recv_exit_status()  # Wait for the command to complete
-            output = stdout.read().decode('utf-8')
-            error = stderr.read().decode('utf-8')
+async def reload_hysteria_daemon(ssh):
+    try:
+        stdin, stdout, stderr = ssh.exec_command('sudo systemctl daemon-reload')
+        stdout.channel.recv_exit_status()  # Wait for the command to complete
+        output = stdout.read().decode('utf-8')
+        error = stderr.read().decode('utf-8')
 
-            if error:
-                logging.error(f"Error output: {error}")
-                return f"Error reloading daemon: {error}"
-            else:
-                logging.info(f"Command output: {output}")
-                return "Daemon Reload was successful"
-        except Exception as e:
-            logging.error(f"Error reloading daemon: {e}")
-            return f"Error reloading daemon: {e}"
-        finally:
-            ssh.close()
-    else:
-        return "SSH connection error"
+        if error:
+            logging.error(f"Error output: {error}")
+            return f"Error reloading daemon: {error}"
+        else:
+            logging.info(f"Command output: {output}")
+            return "Daemon Reload was successful"
+    except Exception as e:
+        logging.error(f"Error reloading daemon: {e}")
+        return f"Error reloading daemon: {e}"
 
 
 # Function to read the JSON file from the remote server
@@ -185,6 +179,9 @@ def write_remote_json_file(ssh, remote_file_path, data):
         with sftp.open(remote_file_path, 'w') as file:
             json.dump(data, file, indent=4)
         sftp.close()
+
+
+
     except Exception as e:
         logging.error(f"Error writing JSON file to {remote_file_path}: {e}")
 
@@ -203,8 +200,9 @@ async def delete_hysteria_user(server, username):
             if 'auth' in data and 'config' in data['auth'] and username in data['auth']['config']:
                 data['auth']['config'].remove(username)
                 write_remote_json_file(ssh, remote_file_path, data)
+                await reload_hysteria_daemon(ssh)
                 logging.info(f"Deleted user {username} from {server}")
-                await reload_hysteria_daemon(server)
+
 
         except Exception as e:
             logging.error(f"Deleting user failed: {e}")
@@ -239,6 +237,8 @@ async def add_hysteria_user(server, username):
 
             # Write the updated JSON file back to the remote server
             write_remote_json_file(ssh, remote_file_path, data)
+
+            await reload_hysteria_daemon(ssh)
 
             # Log the addition
             logging.info(f"Added user {username} to {server}")
@@ -343,21 +343,14 @@ async def adder(query: CallbackQuery, state: FSMContext):
 
         if result:
             await waiting.delete()
-            allowed = f'➖➖➖➖➖➖➖➖➖➖\n\n'\
-                      f'- X Tunnel Pro\n'\
-                      f'- Alien Tunnel\n'\
-                      f'- Idroid \n'
             await state.clear()
             await query.message.answer(f'👩‍🦱 Account created:\n➖➖➖➖➖➖➖➖➖➖\n\n'
                                        f'<b>Host:</b> <code>{hosts}</code>\n'
                                        f'<b>username:</b> <code>{username}</code>\n'
-                                       f'<b>password: </b><code>xteria_bot</code>\n\n'
-                                       f'<i><u><b>📲 Compatible with:</b> </u>\n'
-                                       f'{html.quote(allowed)}'
+                                       f'<b>password: </b><code>xteria_bot</code>\n'
                                        f'➖➖➖➖➖➖➖➖➖➖\n\n'
                                        f'🎯 UDP Core: <b>Hysteria 1.0[x-teria]</b></i>')
 
-            await reload_hysteria_daemon(server)
 
             # Schedule user deletion in 24 hours
             await asyncio.sleep(72 * 3600)
