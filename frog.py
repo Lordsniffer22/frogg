@@ -20,6 +20,7 @@ import json
 import sqlite3
 import string
 import random
+import aiohttp
 
 load_dotenv()
 TOKEN = os.getenv('BOT_TOKEN')
@@ -79,18 +80,56 @@ def remove_from_database(user_id):
     conn.commit()
     conn.close()
 
+#IPLOCATION HELPER(I only need ISP from it)
+
+
+async def get_isp_data(ip_address):
+    # Define the API endpoint and the IP address
+    api_url = "https://api.iplocation.net/"
+    params = {"ip": ip_address}
+
+    try:
+        # Make the GET request to the API
+        async with aiohttp.ClientSession() as session:
+            async with session.get(api_url, params=params) as response:
+                # Check if the request was successful
+                if response.status == 200:
+                    # Parse the JSON response
+                    data = await response.json()
+
+                    # Extract relevant data
+                    country_code2 = data.get("country_code2")
+                    isp = data.get("isp")
+                    resp_code = data.get("response_code")
+                    resp_msg = data.get("response_message")
+                    is_alive = f"{resp_code} {resp_msg}"
+                    return isp, country_code2, is_alive
+                else:
+                    print(f"Failed to retrieve data: {response.status}")
+                    return None
+    except aiohttp.ClientError as e:
+        print(f"An error occurred: {e}")
+        return None
+
+
+
+
 async def do_req(ip_address):
     details = handler.getDetails(ip_address)
-    print(details.city)
-    detos = (f"<i><b><u>Details About This IP address:</u></b></i>\n\nIP: {ip_address}\n\n"
-             f"<b>🌎 Country:</b> {details.country_name}\n\n"
-             f"<b>🌆 City:</b> {details.city}\n\n"
-             f"<b>🕸️ Geo Loc:</b> {details.loc}\n\n"
-             f"<b>🎯 Region:</b> {details.region}\n\n"
-             #f"Company: {details.company}\n"
-             f"<b>📭 Postal Code:</b> {details.postal}\n\n"
-             f"<b>⏰ Time Zone:</b> {details.timezone}")
-    return detos
+    isp_data = await get_isp_data(ip_address)
+    if isp_data:
+        isp, country_code2, is_alive = isp_data
+
+        detos = (f"<i><b><u>Details About This IP address:</u></b></i>\n\nIP: {ip_address}\n\n"
+                 f"<b>🌎 Country:</b> {details.country_name}\n\n"
+                 f"<b>🌆 City:</b> {details.city}\n\n"
+                 f"<b>🎯 Region:</b> {details.region}\n\n"
+                 f"<b>🛜 ISP:</b> {isp}\n\n"
+                 f"<b>📭 Postal Code:</b> {details.postal}\n\n"
+                 f"<b>🕸️ Geo Loc:</b> {details.loc}\n\n"
+                 f"<b>⏰ Time Zone:</b> {details.timezone}")
+        return detos
+
 async def add_to_database(user_id):
     try:
         # Establish a new connection to the SQLite database
@@ -446,7 +485,7 @@ async def send_welc(message: Message):
 
 
     repl = ('🐊 Hey! Am Udp Hysteria Server Generator (aka X-teria Proxy)\n\n'
-             '✍️ Follow the provided instructions and buttons to generate a free premium Udp Hysteria Server valid for 24hrs ⏰\n\n'
+             '✍️ Follow the provided instructions and buttons to generate a free premium Udp Hysteria Server valid for 72 hrs ⏰\n\n'
              '♻️ Always visit this bot to create a new server on Expiring of the previous generated server')
     async with ChatActionSender.typing(bot=bot, chat_id=message.from_user.id):
         await asyncio.sleep(1)
