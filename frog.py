@@ -119,6 +119,10 @@ async def do_req(ip_address):
     isp_data = await get_isp_data(ip_address)
     if isp_data:
         isp, country_code2, is_alive = isp_data
+        if is_alive == '200 OK':
+            statex = "Online ✅"
+        else:
+            statex = "Dead"
 
         detos = (f"<i><b><u>Details About This IP address:</u></b></i>\n\nIP: {ip_address}\n\n"
                  f"<b>🌎 Country:</b> {details.country_name}\n\n"
@@ -126,7 +130,7 @@ async def do_req(ip_address):
                  f"<b>🎯 Region:</b> {details.region}\n\n"
                  f"<b>🛜 ISP:</b> {isp}\n\n"
                  f"<b>📭 Postal Code:</b> {details.postal}\n\n"
-                 f"<b>🕸️ Geo Loc:</b> {details.loc}\n\n"
+                 f"<b>🟣 Server State:</b> {statex}\n\n"
                  f"<b>⏰ Time Zone:</b> {details.timezone}")
         return detos
 
