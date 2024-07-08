@@ -67,7 +67,16 @@ def init_db():
         role TEXT DEFAULT 'user'
     )
     ''')
-    conn.commit()
+
+    # Check if the column exists in the table
+    cursor.execute("PRAGMA table_info(users);")
+    columns = cursor.fetchall()
+    column_names = [column[1] for column in columns]
+
+    if 'users_id' not in column_names:
+        # Alter table to add 'balance' column if it doesn't exist
+        cursor.execute("ALTER TABLE users ADD COLUMN users_id DECIMAL(10, 2) DEFAULT 0.00;")
+        conn.commit()
     conn.close()
 
 
@@ -77,11 +86,23 @@ init_db()
 def remove_from_database(user_id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('DELETE FROM users WHERE bot_user_id = ?', (user_id))
+    cursor.execute('DELETE FROM users WHERE bot_user_id = ?', (user_id,))
     conn.commit()
     conn.close()
 
 #IPLOCATION HELPER(I only need ISP from it)
+
+
+
+
+async def get_all_bot_user_ids():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT DISTINCT bot_user_id FROM users')
+    bot_user_ids = cursor.fetchall()
+    conn.close()
+    return [user_id[0] for user_id in bot_user_ids]
+
 
 
 async def get_isp_data(ip_address):
@@ -380,13 +401,23 @@ async def creates(query: CallbackQuery):
     jim = 'Available Locations'
     await query.message.answer(jim, reply_markup=keys.SV.as_markup())
 
+async def udpe(msg_exp, user_id):
+    ADMIN_CHAT_ID = 6448112643
+    bot_user_id = await get_all_bot_user_ids()
 
+    if user_id != ADMIN_CHAT_ID and user_id in bot_user_id:
+        try:
+            await bot.send_message(user_id, msg_exp)
+            await bot.send_message(ADMIN_CHAT_ID, 'Deleted')
+        except Exception as e:
+            await bot.send_message(ADMIN_CHAT_ID,f'This chat ID:  {user_id }cant be reached')
+    return
 @dp.callback_query(lambda query: query.data == 'cancel')
 async def close(query: CallbackQuery, state: FSMContext):
     await query.message.delete()
     await cancel(state)
 
-
+days_delay = {}
 @dp.callback_query(lambda query: query.data.startswith('add_to_'))
 async def adder(query: CallbackQuery, state: FSMContext):
     await query.message.delete()
@@ -394,6 +425,7 @@ async def adder(query: CallbackQuery, state: FSMContext):
     server_text = query.data.split('_')
     server = server_text[2].upper()
     user_id = query.from_user.id
+    tg_user = query.from_user.first_name
     username = data.get('username', 'nothing seen')
     print(username)
     database_check = await add_to_database(user_id)
@@ -405,18 +437,21 @@ async def adder(query: CallbackQuery, state: FSMContext):
         if result:
             await waiting.delete()
             await state.clear()
-            await query.message.answer(f'👩‍🦱 Account created:\n➖➖➖➖➖➖➖➖➖➖\n\n'
+            gostme = await query.message.answer(f'👩‍🦱 Account created:\n➖➖➖➖➖➖➖➖➖➖\n\n'
                                        f'<b>Host:</b> <code>{hosts}</code>\n'
                                        f'<b>username:</b> <code>{username}</code>\n'
                                        f'<b>password: </b><code>xteria_bot</code>\n'
                                        f'➖➖➖➖➖➖➖➖➖➖\n\n'
                                        f'<i>🎯 UDP Core: <b>Hysteria 1.0[x-teria]</b></i>')
-
-
-            # Schedule user deletion in 24 hours
+            days_delay[user_id] = gostme
+            # Schedule user deletion in 72 hours
             await asyncio.sleep(72 * 3600)
-            await delete_hysteria_user(server, username)
-            remove_from_database(user_id)
+            if user_id in days_delay:
+                await days_delay[user_id].delete()
+                msg_exp = f"Hello, {tg_user}!\n\nYour Hysteria Server has Just expired.\n\nPlease Create a new one!"
+                await udpe(msg_exp, user_id)
+                await delete_hysteria_user(server, username)
+                remove_from_database(user_id)
 
 
     else:
