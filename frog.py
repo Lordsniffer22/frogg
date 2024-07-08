@@ -20,6 +20,7 @@ import json
 import sqlite3
 import string
 import random
+import requests
 import aiohttp
 
 load_dotenv()
@@ -295,9 +296,16 @@ async def add_hysteria_user(server, username):
     else:
         return "SSH connection error"
 
+def toggle_force():
+    """Toggle the boolean value of 'force'."""
+    global force
+    force = not force
+
+    return force
+
 
 # OTHER MAIN PARTS OF THE BOT
-
+do_it_again = {}
 @dp.message(F.text.lower() == '📲 get servers')
 async def get_servers(message: Message, state: FSMContext) -> None:
     rep = ('╭🔴🟡🟢 ────────────────╮\n'
@@ -322,13 +330,33 @@ async def get_servers(message: Message, state: FSMContext) -> None:
             await message.answer("What's Your first name?\n\nDon't include spaces",
                                  reply_markup=keys.cancel.as_markup())
 
+@dp.message(Form.username)
+async def fetch_name(message: Message, state: FSMContext) -> None:
+    global do_it_again
+    user_id = message.from_user.id
+    mass = message.text.strip()
+    mass1 = mass.split()
+    if (mass == '📲 Get Servers' or mass == '💡 Usage Demo' or mass == '🚀Enabled Apps' or mass == 'Src </code>' or mass == '🔎 Looking Glass' or len(mass1) > 1):
+        await state.clear()
+        dell = await message.reply(f'Oh ooh.. {message.text} is not your name.')
+        await asyncio.sleep(3)
+        await dell.delete()
+        again = await message.answer("Let's Do it again!\n\n"
+                             "What's your name?", reply_markup=keys.cancel.as_markup())
+        await state.set_state(Form.username)
+        do_it_again[user_id] = again
 
-def toggle_force():
-    """Toggle the boolean value of 'force'."""
-    global force
-    force = not force
+    else:
+        random_letters = ''.join(random.choices(string.ascii_letters, k=3))
+        real_mass = mass + "-" + random_letters
 
-    return force
+        if user_id in do_it_again:
+            await do_it_again[user_id].delete()
+            do_it_again[user_id] = None
+
+        await state.update_data(username=real_mass.lower())
+        await message.reply(f'Ready to Go, <b><i>{message.text.strip()}</i></b>!\n\n'
+                            'Click the Below Button.', reply_markup=keys.get_hysteria.as_markup())
 
 
 @dp.message(F.text.lower() == 'force')
@@ -344,16 +372,6 @@ async def force_switch(message: Message):
     else:
         await message.reply('Nice try')
 
-
-@dp.message(Form.username)
-async def fetch_name(message: Message, state: FSMContext) -> None:
-    mass = message.text.strip()
-    random_letters = ''.join(random.choices(string.ascii_letters, k=3))
-    real_mass = mass + "-" + random_letters
-
-    await state.update_data(username=real_mass.lower())
-    await message.reply(f'Ready to Go, <b><i>{message.text.strip()}</i></b>!\n\n'
-                        'Click the Below Button.', reply_markup=keys.get_hysteria.as_markup())
 
 
 @dp.callback_query(lambda query: query.data == 'create')
@@ -407,9 +425,31 @@ async def adder(query: CallbackQuery, state: FSMContext):
         await query.message.answer(database_check)
 
     # await query.message.answer('The add_hysteria_function is actively being built. Test later!')
+@dp.message(Command('dbase'))
+async def handle_dbase(message: Message):
+    user_id = message.from_user.id
+    print(user_id)
+    caption = 'Bot Brain Backed up!'
+    TESLA = 6448112643
 
+    if user_id == int(TESLA):
+        db_file_path = 'user_data.db'
+        if os.path.exists(db_file_path):
+            url = f"https://api.telegram.org/bot{TOKEN}/sendDocument"
+            with open(db_file_path, "rb") as file:
+              files = {"document": file}
+              params = {"chat_id": user_id, "caption": caption}#
+              response = requests.post(url, files=files, data=params)
 
-@dp.message(F.text.lower() == 'src </code>')
+            if response.status_code == 200:
+                print("File sent successfully!")
+            else:
+                print(f"Failed to send file. Error: {response.text}")
+
+    else:
+        await message.reply('Fuck you! Only the Devleper can do that🤓')
+
+@dp.message(F.text.lower() == 'src code')
 async def source_rep(message: Message):
     links = "t.me/teslassh"
     repl = (f'Build Your Own VPN app today. \n\nContact the admins of this bot to Buy VPN Source code Today!.\n\n'
