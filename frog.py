@@ -371,9 +371,12 @@ async def fetch_name(message: Message, state: FSMContext) -> None:
         random_letters = ''.join(random.choices(string.ascii_letters, k=3))
         real_mass = mass + "-" + random_letters
 
-        if user_id in do_it_again:
-            await do_it_again[user_id].delete()
-            do_it_again[user_id] = None
+        try:
+            if user_id in do_it_again and do_it_again[user_id] is not None:
+                await do_it_again[user_id].delete()
+        except AttributeError as e:
+            print(f"Error: {e}. Unable to delete.")
+        do_it_again[user_id] = None
 
         await state.update_data(username=real_mass.lower())
         await message.reply(f'Ready to Go, <b><i>{message.text.strip()}</i></b>!\n\n'
