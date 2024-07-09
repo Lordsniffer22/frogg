@@ -27,6 +27,25 @@ keyb = ReplyKeyboardMarkup(
     resize_keyboard=True
 )
 
+#ADMIN KEYBOARDS
+admino = ReplyKeyboardMarkup(
+    keyboard=[
+        [
+            KeyboardButton(text='📲 Get Servers'),
+            KeyboardButton(text='💡 Usage Demo')
+        ],
+[
+            KeyboardButton(text='🚀Enabled Apps'),
+            KeyboardButton(text='Src Code')
+        ],
+[
+            KeyboardButton(text='🔎 Looking Glass'),
+            KeyboardButton(text='Send Updates')
+        ]
+
+    ],
+    resize_keyboard=True
+)
 
 sponsors = InlineKeyboardBuilder()
 markup = InlineKeyboardMarkup(inline_keyboard=[
@@ -81,3 +100,17 @@ markup = InlineKeyboardMarkup(inline_keyboard=[
  ]
 ])  # Some markup
 cancel.attach(InlineKeyboardBuilder.from_markup(markup))
+
+ON = InlineKeyboardBuilder()
+markup = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='Turn ON', callback_data='toggle')
+ ]
+])  # Some markup
+ON.attach(InlineKeyboardBuilder.from_markup(markup))
+
+OFF = InlineKeyboardBuilder()
+markup = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='Turn OFF', callback_data='toggle')
+ ]
+])  # Some markup
+OFF.attach(InlineKeyboardBuilder.from_markup(markup))
