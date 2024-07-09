@@ -404,11 +404,9 @@ async def make_it_louder(message: Message, state: FSMContext):
         for user in users:
             await bot.send_message(user, note)
     except Exception as e:
-        return f'{e}'
+        return f'Failed to send message: {e}'
     await state.clear()
-
-
-
+    return f'Message sent successfully to {len(users)} users.'
 
 
 
