@@ -36,7 +36,7 @@ admino = ReplyKeyboardMarkup(
         ],
 [
             KeyboardButton(text='🚀Enabled Apps'),
-            KeyboardButton(text='Src Code')
+            KeyboardButton(text='Switch')
         ],
 [
             KeyboardButton(text='🔎 Looking Glass'),
