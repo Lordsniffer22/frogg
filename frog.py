@@ -398,6 +398,7 @@ async def louder(message: Message, state: FSMContext) -> None:
 @dp.message(Form.mesg)
 async def make_it_louder(message: Message, state: FSMContext):
     note = message.text.strip()
+    await state.clear()
     users = await get_all_bot_user_ids()
     print(users)
     try:
@@ -405,7 +406,7 @@ async def make_it_louder(message: Message, state: FSMContext):
             await bot.send_message(user, note)
     except Exception as e:
         return f'Failed to send message: {e}'
-    await state.clear()
+    
     return f'Message sent successfully to {len(users)} users.'
 
 
