@@ -40,7 +40,7 @@ force = False
 user_states = {}
 STATE_NONE = 'none'
 XTERIA_CREATE = 'awaiting_userename'
-
+admins = [1383981132, 1940595419]
 dp = Dispatcher()
 bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 
@@ -48,6 +48,7 @@ bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 class Form(StatesGroup):
     username = State()
     ip_add = State()
+    mesg = State()
 
 
 # Establish a connection to the SQLite database
@@ -382,19 +383,30 @@ async def fetch_name(message: Message, state: FSMContext) -> None:
         await message.reply(f'Ready to Go, <b><i>{message.text.strip()}</i></b>!\n\n'
                             'Click the Below Button.', reply_markup=keys.get_hysteria.as_markup())
 
-
-@dp.message(F.text.lower() == 'force')
-async def force_switch(message: Message):
+@dp.message(F.text.lower() == 'send updates')
+async def louder(message: Message, state: FSMContext) -> None:
     user_id = message.from_user.id
-    if user_id == 1383981132 or user_id == 1940595419:
-        force = toggle_force()
-        if force == True:
-            await message.reply(f'Force Join Has been Turned ON')
-        else:
-            await message.reply(f'Force Join Has been Turned OFF')
+    if user_id in admins:
+        await state.set_state(Form.mesg)
+        await message.reply('What do you want to Tell Our Bot users?\n\nType the message. Am listening..')
 
     else:
-        await message.reply('Nice try')
+        await message.reply('Are you nuts? Only admins can do that!')
+        return
+
+
+@dp.message(Form.mesg)
+async def make_it_louder(message: Message, state: FSMContext):
+    note = message.text.strip()
+    users = await get_all_bot_user_ids()
+    print(users)
+    try:
+        for user in users:
+            await bot.send_message(user, note)
+        await state.clear()
+    except Exception as e:
+        return f'{e}'
+
 
 
 
@@ -560,18 +572,55 @@ async def verifs(query: CallbackQuery):
                      '│\n'
                      '╰─────────────────────╯')
             await query.message.answer(force, reply_markup=keys.sponsors.as_markup())
+@dp.message(F.text.lower() == 'switch')
+async def lets_toggle(message: Message):
+    switch_state = force
+    if switch_state == True:
+        gamba = 'ON'
+        text = f'Forced Join is Currently Switched <b><i>{gamba}</i></b>'
+        await message.answer(text, reply_markup=keys.OFF.as_markup())
+    else:
+        gamba = 'OFF'
+        text = f'Forced Join is Currently <b><i>{gamba}</i></b>'
+        await message.answer(text, reply_markup=keys.ON.as_markup())
+
+@dp.callback_query(lambda query: query.data == 'toggle')
+async def toggler(query: CallbackQuery):
+    user_id = query.from_user.id
+    if user_id in admins:
+        force = toggle_force()
+        await query.message.delete()
+        if force == True:
+            gamba = 'ON'
+            text = f'Forced Join is Currently Switched <b><i>{gamba}</i></b>'
+            await query.message.answer(text, reply_markup=keys.OFF.as_markup())
+        else:
+            gamba = 'OFF'
+            text = f'Forced Join is Currently <b><i>{gamba}</i></b>'
+            await query.message.answer(text, reply_markup=keys.ON.as_markup())
 
 
-@dp.message(Command('start'))
+@dp.message(CommandStart)
 async def send_welc(message: Message):
-
-
-    repl = ('🐊 Hey! Am Udp Hysteria Server Generator (aka X-teria Proxy)\n\n'
-             '✍️ Follow the provided instructions and buttons to generate a free premium Udp Hysteria Server valid for 72 hrs ⏰\n\n'
-             '♻️ Always visit this bot to create a new server on Expiring of the previous generated server')
-    async with ChatActionSender.typing(bot=bot, chat_id=message.from_user.id):
-        await asyncio.sleep(1)
-        await message.reply(repl, reply_markup=keys.keyb)
+    user = message.from_user.id
+    admin_ids = [1383981132, 1940595419]
+    if not user in admin_ids:
+        repl = ('🐊 Hey! Am Udp Hysteria Server Generator (aka X-teria Proxy)\n\n'
+                '✍️ Follow the provided instructions and buttons to generate a free premium Udp Hysteria Server valid for 72 hrs ⏰\n\n'
+                '♻️ Always visit this bot to create a new server on Expiring of the previous generated server')
+        async with ChatActionSender.typing(bot=bot, chat_id=message.from_user.id):
+            await asyncio.sleep(1)
+            await message.reply(repl, reply_markup=keys.keyb)
+    else:
+        repl = ('🐊Hello Mr Admin!\n\n'
+                'Here is your National ID:\n\n'
+                f'Name: {message.from_user.first_name}\n'
+                f'User ID: {message.from_user.id}\n'
+                f'Role: Admin\n\n'
+                f'You can Use me to control the UDP World!')
+        async with ChatActionSender.typing(bot=bot, chat_id=message.from_user.id):
+            await asyncio.sleep(1)
+            await message.reply(repl, reply_markup=keys.admino)
 
 
 async def main() -> None:
