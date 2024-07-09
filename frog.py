@@ -403,9 +403,11 @@ async def make_it_louder(message: Message, state: FSMContext):
     try:
         for user in users:
             await bot.send_message(user, note)
-        await state.clear()
     except Exception as e:
         return f'{e}'
+    await state.clear()
+
+
 
 
 
