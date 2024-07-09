@@ -3,3 +3,4 @@ python_dotenv
 rave_python
 paramiko
 requests
+ipinfo
