@@ -209,7 +209,7 @@ async def establish_ssh_connection(server):
 
 async def reload_hysteria_daemon(ssh):
     try:
-        stdin, stdout, stderr = ssh.exec_command('sudo systemctl daemon-reload')
+        stdin, stdout, stderr = ssh.exec_command('sudo systemctl restart hysteria-server')
         stdout.channel.recv_exit_status()  # Wait for the command to complete
         output = stdout.read().decode('utf-8')
         error = stderr.read().decode('utf-8')
@@ -406,7 +406,7 @@ async def make_it_louder(message: Message, state: FSMContext):
             await bot.send_message(user, note)
     except Exception as e:
         return f'Failed to send message: {e}'
-    
+
     return f'Message sent successfully to {len(users)} users.'
 
 
