@@ -205,6 +205,12 @@ async def establish_ssh_connection(server):
     except Exception as e:
         logging.error(f"Error establishing SSH connection to {server}: {e}")
         return None
+async def reboot(ssh):
+    try:
+        stdin, stdout, stderr = ssh.exec_command('reboot')
+        stdout.channel.recv_exit_status()
+    except:
+        return None
 
 
 async def reload_hysteria_daemon(ssh):
@@ -236,6 +242,39 @@ def read_remote_json_file(ssh, remote_file_path):
     except Exception as e:
         logging.error(f"Error reading JSON file from {remote_file_path}: {e}")
         return None
+
+async def delete_all():
+    server = 'USA'
+    ssh = await establish_ssh_connection(server)
+    if ssh:
+        try:
+            remote_file_path = '/etc/hysteria/config.json'
+            j_object = read_remote_json_file(ssh, remote_file_path)
+            if j_object is None:
+                logging.error("Config file is empty or is not present")
+                return
+
+            if 'auth' in j_object and 'config' in j_object['auth']:
+                j_object['auth']['config'] = []
+                write_remote_json_file(ssh, remote_file_path, j_object)
+                await reboot(ssh)
+
+        except Exception as e:
+            logging.error(f"Deleting users failed: {e}")
+
+        finally:
+            ssh.close()
+    else:
+        logging.error("SSH connection error")
+
+
+
+
+
+
+
+
+
 
 
 # Function to write the JSON file to the remote server
@@ -584,6 +623,12 @@ async def lets_toggle(message: Message):
         gamba = 'OFF'
         text = f'Forced Join is Currently <b><i>{gamba}</i></b>'
         await message.answer(text, reply_markup=keys.ON.as_markup())
+
+@dp.message(F.text.lower() == 'wipe')
+async def wiper(message: Message):
+    await delete_all()
+    await asyncio.sleep(3)
+    await message.reply('Wiped!')
 
 @dp.callback_query(lambda query: query.data == 'toggle')
 async def toggler(query: CallbackQuery):
