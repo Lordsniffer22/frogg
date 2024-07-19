@@ -32,7 +32,7 @@ admino = ReplyKeyboardMarkup(
     keyboard=[
         [
             KeyboardButton(text='📲 Get Servers'),
-            KeyboardButton(text='💡 Usage Demo')
+            KeyboardButton(text='💡 Total Users')
         ],
 [
             KeyboardButton(text='🚀Enabled Apps'),
