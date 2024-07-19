@@ -452,7 +452,7 @@ async def louder(message: Message, state: FSMContext) -> None:
         await message.reply('Are you nuts? Only admins can do that!')
         return
 
-@dp.message(F.text.lower() == 'total users')
+@dp.message(F.text.lower() == '💡 total users')
 async def counting_them(message: Message):
     toto = await count_them()
     await message.reply(f"Users created So far:\n\nTotal: {toto}")
