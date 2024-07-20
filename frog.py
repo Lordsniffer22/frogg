@@ -266,6 +266,7 @@ async def delete_all():
 
         finally:
             ssh.close()
+            
     else:
         logging.error("SSH connection error")
 
@@ -652,6 +653,7 @@ async def wiper(message: Message):
     await delete_all()
     await asyncio.sleep(3)
     await message.reply('Wiped!')
+    os.system('docker restart frog')
 
 @dp.callback_query(lambda query: query.data == 'toggle')
 async def toggler(query: CallbackQuery):
